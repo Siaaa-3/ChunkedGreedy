@@ -3,11 +3,6 @@
 /runs/
 /out/
 
-# third-party code fetched by third_party/fetch.sh
-/bench/reorder/Reordering_methods/Acc_spmm_reorder/
-/bench/spmm/SpMM_methods/DTC-SpMM_ASPLOS24/
-/bench/spmm/SpMM_methods/FlashSparse/
-
 # build outputs
 build/
 dist/

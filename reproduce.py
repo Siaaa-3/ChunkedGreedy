@@ -2,7 +2,7 @@
 """Reproduce the paper's results.
 
   python reproduce.py figures                  # tables + figures from the released results/
-  python reproduce.py setup                    # fetch third-party code, build extensions
+  python reproduce.py setup                    # build extensions
   python reproduce.py download --set final     # SuiteSparse matrices -> data/
   python reproduce.py reorder  --set final     # reorder with every method (writes runs/)
   python reproduce.py spmm     --set final     # SpMM times and amortization
@@ -60,7 +60,6 @@ def dataset_name(name: str) -> str:
 
 
 def stage_setup(args) -> None:
-    run(["bash", "third_party/fetch.sh"])
     run([sys.executable, "-m", "pip", "install", "-e", "sporder"])
     run(["bash", "scripts/build_native.sh", "all"], cwd=ROOT / "bench" / "reorder")
 

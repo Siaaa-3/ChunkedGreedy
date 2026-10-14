@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build the native reordering extensions used in the paper.
 # Usage: ./scripts/build_native.sh [acc|clusterwise|all]
-#   acc          AccReorder and rabbit-local-greedy (needs third_party/fetch.sh Acc_spmm_reorder)
+#   acc          AccReorder and rabbit-local-greedy
 #   clusterwise  ClusterHier
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -39,10 +39,6 @@ build_acc() {
   local output
   output="$ROOT/reorder_bench/acc_reorder_core$(python_ext_suffix)"
 
-  if [[ ! -f "$upstream_order/my_order.hpp" ]]; then
-    echo "[build_native] acc: missing $upstream_order; run third_party/fetch.sh first" >&2
-    exit 1
-  fi
   rm -rf "$sanitized_dir"
   mkdir -p "$sanitized_dir"
   cp "$upstream_order"/*.hpp "$sanitized_dir"/

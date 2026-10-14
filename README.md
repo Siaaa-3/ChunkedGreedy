@@ -16,7 +16,7 @@ pandas/matplotlib and reads the measurements in `results/`.
 ## Full reproduction
 
 ```bash
-python reproduce.py setup                     # fetch third-party code, build extensions
+python reproduce.py setup                     # build extensions
 python reproduce.py download --set candidates # SuiteSparse matrices -> data/
 python reproduce.py reorder  --set candidates # every reordering method
 python reproduce.py spmm     --set final      # SpMM times and amortization
@@ -68,9 +68,6 @@ run to Chunked Greedy.
   identical to the submitted one.
 - Timeouts (1 h) and out-of-memory failures were recorded over several
   machines; `results/reorder_status.csv` is the curated list used in the paper.
-- `third_party/` explains which third-party code is fetched rather than
-  shipped, and why.
-
 ## License
 
 MIT (see `LICENSE`) for the code in this repository, except third-party code,

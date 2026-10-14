@@ -1,6 +1,6 @@
 # Third-party code
 
-Shipped in this repository, under their own licenses:
+Third-party code shipped in this repository keeps its original license.
 
 | Code | Location | License |
 |------|----------|---------|
@@ -8,20 +8,11 @@ Shipped in this repository, under their own licenses:
 | clusterwise-spgemm | `bench/reorder/Reordering_methods/clusterwise-spgemm/` | BSD (LBNL / Tokyo Tech) |
 | AccSpMM | `bench/spmm/SpMM_methods/AccSpMM/` | MIT |
 | Voltrix-SpMM | `bench/spmm/SpMM_methods/Voltrix-SpMM/` | MIT |
+| Acc_spmm_reorder (`order/`: AccReorder, Rabbit Order) | `bench/reorder/Reordering_methods/Acc_spmm_reorder/` | none stated upstream; Rabbit Order (c) NTT |
+| DTC-SpMM ([HPMLL/DTC-SpMM_ASPLOS24](https://github.com/HPMLL/DTC-SpMM_ASPLOS24) @ `66eca26`) | `bench/spmm/SpMM_methods/DTC-SpMM_ASPLOS24/` | none stated upstream |
+| FlashSparse ([ParCIS/FlashSparse](https://github.com/ParCIS/FlashSparse) @ `1687646`) | `bench/spmm/SpMM_methods/FlashSparse/` | none stated upstream |
 
-`bench/spmm/SpMM_methods/VERSIONS.md` lists the orchestration-only changes
-made for benchmarking (timing hooks; kernels are unchanged).
-
-Fetched by `fetch.sh` (no license that permits redistribution), at the commits
-pinned in `sources.txt`, then patched with `patches/<name>.patch`:
-
-| Code | Used for | Patch |
-|------|----------|-------|
-| Acc_spmm_reorder (`order/`: AccReorder, Rabbit Order) | AccReorder, rabbit-local-greedy | none |
-| DTC-SpMM_ASPLOS24 | DTC-SpMM kernel | timing hooks in `DTCSpMM_kernel.cu` |
-| FlashSparse | FlashSparse kernel | `prepare`/`run` entry points in `benchmark.cpp` |
-
-```bash
-bash third_party/fetch.sh               # all
-bash third_party/fetch.sh FlashSparse   # one entry
-```
+Code without a stated license is included only so that the paper's results can
+be reproduced; all rights remain with its authors.
+`bench/spmm/SpMM_methods/VERSIONS.md` lists the orchestration-only changes made
+for benchmarking (timing hooks; kernels are unchanged).
