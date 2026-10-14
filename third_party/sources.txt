@@ -1,4 +1,4 @@
 # name                dest                                                   url                                                     commit                                     patched subtree
 Acc_spmm_reorder      bench/reorder/Reordering_methods/Acc_spmm_reorder      https://gitee.com/li-san_1_0/Acc_spmm_reorder.git       688517774e50de82f913ba1ae1e836b03d9f48fc   order
-DTC-SpMM_ASPLOS24     bench/spmm/SpMM_methods/DTC-SpMM_ASPLOS24              https://github.com/HPMLL/DTC-SpMM_ASPLOS24.git          TBD                                        DTC-SpMM
+DTC-SpMM_ASPLOS24     bench/spmm/SpMM_methods/DTC-SpMM_ASPLOS24              https://github.com/HPMLL/DTC-SpMM_ASPLOS24.git          66eca266bde1f3faf5f8ef7a054db2391b50e27d   DTC-SpMM
 FlashSparse           bench/spmm/SpMM_methods/FlashSparse                    https://github.com/ParCIS/FlashSparse.git               168764612c1a2ad5b8661be22cfb6a8ae044bada   FlashSparse

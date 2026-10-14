@@ -1,0 +1,208 @@
+diff --git a/DTC-SpMM/.reorder_bench_kernel_ms_v1 b/DTC-SpMM/.reorder_bench_kernel_ms_v1
+new file mode 100644
+index 0000000..e69de29
+diff --git a/DTC-SpMM/.reorder_bench_kernel_v2 b/DTC-SpMM/.reorder_bench_kernel_v2
+new file mode 100644
+index 0000000..e69de29
+diff --git a/DTC-SpMM/DTCSpMM_kernel.cu b/DTC-SpMM/DTCSpMM_kernel.cu
+index 914c340..8014869 100644
+--- a/DTC-SpMM/DTCSpMM_kernel.cu
++++ b/DTC-SpMM/DTCSpMM_kernel.cu
+@@ -7,7 +7,9 @@
+ #include <sputnik/spmm/cuda_spmm.h>
+ #include <sputnik/sputnik.h>
+ #include <sstream>
++#include <stdexcept>
+ #include <stdio.h>
++#include <string>
+ #include <thrust/device_vector.h>
+ #include <thrust/host_vector.h>
+ #include <thrust/sort.h>
+@@ -15,11 +17,39 @@
+ #include <torch/extension.h>
+ #include <vector>
+ #define WPB 8
+-#define EXE_TIME 1000
++#define EXE_TIME 1
+ #define NUM_SM_GPU 128 // 4090
+ #define USE_SPUTNIK
+ using namespace nvcuda;
+ 
++static void cuda_check_or_throw(cudaError_t error, const char *context) {
++  if (error != cudaSuccess) {
++    throw std::runtime_error(std::string(context) + ": " +
++                             cudaGetErrorString(error));
++  }
++}
++
++static int dtc_hardware_max_dynamic_shared_mem_bytes() {
++  int device = 0;
++  cudaGetDevice(&device);
++  int limit = 0;
++  cudaDeviceGetAttribute(&limit, cudaDevAttrMaxSharedMemoryPerBlockOptin,
++                         device);
++  if (limit <= 0) {
++    cudaDeviceGetAttribute(&limit, cudaDevAttrMaxSharedMemoryPerBlock, device);
++  }
++  return limit;
++}
++
++static constexpr int DTC_SHARED_MEM_SAFETY_MARGIN = 8192; // 8 KiB headroom
++
++static int dtc_usable_dynamic_shared_mem_bytes() {
++  const int hardware_max = dtc_hardware_max_dynamic_shared_mem_bytes();
++  return hardware_max > DTC_SHARED_MEM_SAFETY_MARGIN
++             ? hardware_max - DTC_SHARED_MEM_SAFETY_MARGIN
++             : 0;
++}
++
+ struct GpuTimer {
+   cudaEvent_t start;
+   cudaEvent_t stop;
+@@ -138,11 +168,7 @@ void fill_segment_cuda(int *nodePointer, int *seg_out, int blockSize_h,
+   int window_count = (num_nodes + blockSize_h - 1) / blockSize_h;
+   fill_segment<<<window_count, block_size>>>(nodePointer, seg_out, blockSize_h,
+                                              blockSize_w, num_nodes);
+-  cudaError_t error = cudaGetLastError();
+-  if (error != cudaSuccess) {
+-    printf("CUDA error: %s\n", cudaGetErrorString(error));
+-    exit(-1);
+-  }
++  cuda_check_or_throw(cudaGetLastError(), "fill_segment_cuda");
+ }
+ 
+ /*Generate TCblock_rowid*/
+@@ -165,11 +191,7 @@ void generate_tcblock_rowid_cuda(int *rowwindow_offset, int *tcblock_rowid,
+   int window_count = num_row_windows;
+   generate_tcblock_rowid<<<window_count, block_size>>>(
+       rowwindow_offset, tcblock_rowid, num_row_windows);
+-  cudaError_t error = cudaGetLastError();
+-  if (error != cudaSuccess) {
+-    printf("CUDA error: %s\n", cudaGetErrorString(error));
+-    exit(-1);
+-  }
++  cuda_check_or_throw(cudaGetLastError(), "generate_tcblock_rowid_cuda");
+ }
+ 
+ /* Generate edge2column*/
+@@ -241,11 +263,7 @@ void generate_edgetocolumn_cuda(int *nodePointer, int *edgelist,
+   // generate_edgetocolumn_v1<<< window_count, block_size >>> (nodePointer,
+   // edgelist, edgelist_sort, edgetocol, blockpartition, blocknum, blockSize_h,
+   // blockSize_w, num_nodes);
+-  cudaError_t error = cudaGetLastError();
+-  if (error != cudaSuccess) {
+-    printf("CUDA error: %s\n", cudaGetErrorString(error));
+-    exit(-1);
+-  }
++  cuda_check_or_throw(cudaGetLastError(), "generate_edgetocolumn_cuda");
+ }
+ 
+ /*Generate TC offset, tileid and AtoB*/
+@@ -309,29 +327,30 @@ void generate_tcoffset_id_atob_cuda(int *nodePointer, int *rowwindow_offset,
+   int block_size = 1;
+   int window_count = num_row_windows;
+   const int dynamic_shared_size = (2 * max_block + 1) * sizeof(int);
+-  std::cout << "dynamic_shared_size: " << dynamic_shared_size << std::endl;
+-  if (dynamic_shared_size > 98304) {
+-    int maxbytes = 131072; // 96 KB
+-    cudaFuncSetAttribute(generate_tcoffset_id_atob,
+-                         cudaFuncAttributeMaxDynamicSharedMemorySize, maxbytes);
+-  } else if (dynamic_shared_size > 65536) {
+-    int maxbytes = 98304; // 96 KB
+-    cudaFuncSetAttribute(generate_tcoffset_id_atob,
+-                         cudaFuncAttributeMaxDynamicSharedMemorySize, maxbytes);
+-  } else if (dynamic_shared_size > 32768) {
+-    int maxbytes = 65536; // 128 KB
++  const int hardware_max = dtc_hardware_max_dynamic_shared_mem_bytes();
++  const int usable_limit = dtc_usable_dynamic_shared_mem_bytes();
++  std::cout << "dynamic_shared_size: " << dynamic_shared_size
++            << " (usable_limit: " << usable_limit
++            << ", hardware_max: " << hardware_max << ")" << std::endl;
++  if (dynamic_shared_size > usable_limit) {
++    throw std::runtime_error(
++        "DTC-SpMM preprocess: dynamic_shared_size=" +
++        std::to_string(dynamic_shared_size) + " bytes exceeds usable limit " +
++        std::to_string(usable_limit) + " bytes (hardware opt-in max " +
++        std::to_string(hardware_max) + " bytes, margin " +
++        std::to_string(DTC_SHARED_MEM_SAFETY_MARGIN) + "); max_tc_blocks=" +
++        std::to_string(max_block));
++  }
++  if (dynamic_shared_size > 0) {
+     cudaFuncSetAttribute(generate_tcoffset_id_atob,
+-                         cudaFuncAttributeMaxDynamicSharedMemorySize, maxbytes);
++                         cudaFuncAttributeMaxDynamicSharedMemorySize,
++                         dynamic_shared_size);
+   }
+   generate_tcoffset_id_atob<<<window_count, block_size, dynamic_shared_size>>>(
+       nodePointer, rowwindow_offset, edgeToColumn, edgeToRow, edgeList,
+       tcblock_offset, tcblock_tileid, sparseatob, max_block, num_nodes,
+       blockSize_h, blockSize_w, num_row_windows);
+-  cudaError_t error = cudaGetLastError();
+-  if (error != cudaSuccess) {
+-    printf("CUDA error: %s\n", cudaGetErrorString(error));
+-    exit(-1);
+-  }
++  cuda_check_or_throw(cudaGetLastError(), "generate_tcoffset_id_atob_cuda");
+ }
+ void padding_up_8(int *input, int size) {
+   int threadsPerBlock = 256;
+@@ -410,12 +429,7 @@ void fill_edgeToRow_cuda(int *edgeToRow, int *nodePointer, int num_nodes) {
+   int block_size = 1024;
+   int grid_size = (num_nodes * wrap_size + block_size - 1) / block_size;
+   fill_edgeToRow<<<grid_size, block_size>>>(edgeToRow, nodePointer, num_nodes);
+-  cudaError_t error = cudaGetLastError();
+-  if (error != cudaSuccess) {
+-    // print the CUDA error message and exit
+-    printf("CUDA error: %s\n", cudaGetErrorString(error));
+-    exit(-1);
+-  }
++  cuda_check_or_throw(cudaGetLastError(), "fill_edgeToRow_cuda");
+ }
+ 
+ //////////////////////
+@@ -929,23 +943,15 @@ std::vector<torch::Tensor> spmm_forward_improved_ptx_uint8_cuda(
+ 		exit(-1);
+ 	}
+     float dtc_time = timer.Elapsed() / EXE_TIME;
+-	std::ofstream res_file;
+-	res_file.open("DTCSpMM_exe_time_and_throughput.csv", std::ios::app);
+-	float spmm_flop = float(num_edges) * float(embedding_dim) * 2.0;
+-	float DTC_SpMM_throughput_ = (float(spmm_flop * 1000.))/(dtc_time * 1000. * 1000. * 1000.);
+-	res_file << "DTCSpMM:" << "," << dtc_time << "," << DTC_SpMM_throughput_ << ",";
+-	res_file.close();
+ 	cudaError_t error = cudaGetLastError();
+     if(error != cudaSuccess) {
+         printf("CUDA error: %s\n", cudaGetErrorString(error));
+         exit(-1);
+     }
+-    return {output};
++    return {output, torch::tensor(dtc_time)};
+ }
+ 
+ 
+-
+-
+ std::vector<torch::Tensor> spmm_forward_cuda_origin_clock(
+ 	torch::Tensor Rowwindow_offset,
+ 	torch::Tensor TCblocktile_id,
+@@ -1183,19 +1189,13 @@ std::vector<torch::Tensor> spmm_balance_forward_cuda_ptx_unit8_prefetch(
+ 	} 
+ 
+ 	float DTC_time = timer.Elapsed() / EXE_TIME;
+-	std::ofstream res_file;
+-	res_file.open("DTCSpMM_exe_time_and_throughput.csv", std::ios::app);
+-	float spmm_flop = float(num_edges) * float(embedding_dim) * 2.0;
+-	float DTC_throughput = (float(spmm_flop * 1000.))/(DTC_time * 1000. * 1000. * 1000.);
+-	res_file << "DTCSpMM:" << "," << DTC_time << "," << DTC_throughput;
+-	res_file.close();
+ 	// check for exe error
+     cudaError_t error = cudaGetLastError();
+     if(error != cudaSuccess) {
+         printf("CUDA error: %s\n", cudaGetErrorString(error));
+         exit(-1);
+     }
+-    return {output};
++    return {output, torch::tensor(DTC_time)};
+ }
+ 
+ 

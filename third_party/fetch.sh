@@ -28,9 +28,11 @@ grep -v '^#' "$SOURCES" | while read -r name dest url commit _scope; do
     exit 1
   fi
   echo "[$name] cloning $url @ $commit"
-  git clone --quiet "$url" "$target"
-  git -C "$target" checkout --quiet "$commit"
-  git -C "$target" submodule update --init --recursive --quiet
+  git init --quiet "$target"
+  git -C "$target" remote add origin "$url"
+  git -C "$target" fetch --quiet --depth 1 origin "$commit"
+  git -C "$target" checkout --quiet FETCH_HEAD
+  git -C "$target" submodule update --init --recursive --depth 1 --quiet
   if [[ -f "$PATCHES/$name.patch" ]]; then
     echo "[$name] applying patches/$name.patch"
     git -C "$target" apply "$PATCHES/$name.patch"
