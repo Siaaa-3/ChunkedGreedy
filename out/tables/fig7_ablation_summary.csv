@@ -1,0 +1,3 @@
+method,label,n,mean_reorder_ms,mean_pillars,median_reorder_ms
+sporder-csg,CG,300,83.15183400000002,1632049.63,25.09825
+sporder-cg,CG w/o Stage 1,300,352.69196900000003,1658615.0066666666,36.96035

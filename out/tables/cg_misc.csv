@@ -1,0 +1,13 @@
+item,value,n
+"CG amortization, median over positive (kernel, w, matrix)",944.3395383,4037
+"CG amortization median, w=32, positive",1467.356115,969
+"CG amortization median, w=64, positive",1243.412713,997
+"CG amortization median, w=128, positive",909.9210177,1023
+"CG amortization median, w=256, positive",531.73033955,1048
+"CG amortization median, voltrix, positive",587.7366811500001,1106
+"CG amortization median, flashsparse, positive",1566.175246,1005
+"CG amortization median, acc-spmm, positive",1515.8496845,1052
+"CG amortization median, dtc-spmm, positive",612.13552015,874
+CG reorder time median (ms),25.09825,300
+CG reorder time geomean (ms),33.115918780454436,300
+CG reorder time mean (ms),83.15183400000002,300

@@ -1,0 +1,11 @@
+method,voltrix,flashsparse,acc-spmm,dtc-spmm,version
+acc,12.1,24.0,20.0,30.5,submitted
+groot-py,36.6,52.0,51.9,52.6,submitted
+dtc-tca,8.5,28.3,25.5,27.7,submitted
+clusterwise-hier,8.2,24.8,20.2,29.2,submitted
+sporder-csg,7.8,16.2,12.3,27.2,submitted
+acc,12.1,24.0,20.0,30.5,revision (common 291)
+groot-py,36.6,52.0,51.9,52.6,revision (common 291)
+dtc-tca,8.5,28.3,25.5,27.7,revision (common 291)
+clusterwise-hier,8.2,24.8,20.2,29.2,revision (common 291)
+sporder-csg,7.3,15.5,11.6,26.7,revision (common 291)

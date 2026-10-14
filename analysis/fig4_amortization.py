@@ -109,6 +109,9 @@ def matrix_order(sub):
 def fig4b(a, kernel="flashsparse"):
     sub = a[a.spmm_method == kernel]
     order = matrix_order(sub)
+    points = sub.pivot_table(index="matrix", columns="reorder_method", values="amortization", aggfunc="first")
+    points = points.reindex(order)[MAIN_METHODS].rename_axis(index="matrix", columns=None)
+    save_table(points.reset_index(), f"fig4b_points_{kernel}")
     apply_paper_style(17)
     fig, ax = plt.subplots(figsize=(10.0, 4.8))
     x_index = {mat: i for i, mat in enumerate(order)}

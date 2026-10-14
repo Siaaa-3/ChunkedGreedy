@@ -1,0 +1,6 @@
+method,label,timeout,oom,timeout_pct,oom_pct
+sporder-csg,ChunkedGreedy,0,6,0.0,1.26
+clusterwise-hier,ClusterHier,0,23,0.0,4.84
+dtc-tca,TCA,51,11,10.74,2.32
+groot-py,Groot,80,6,16.84,1.26
+acc,AccReorder,32,6,6.74,1.26

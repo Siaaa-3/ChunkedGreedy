@@ -26,6 +26,9 @@ def main():
                                aggfunc="first")[MAIN_METHODS].dropna()
     stats = load_quality(orders=["ORIGIN"], matrices=mats).set_index("matrix")
     print(f"matrices with all reorder times: {len(common)}")
+    points = common.rename_axis(columns=None).join(stats[["n", "nnz"]].rename(columns={"n": "rows"}))
+    points["avg_degree"] = points.nnz / points.rows
+    save_table(points.reset_index(), "fig5_points")
 
     apply_paper_style(14)
     scatter(common, stats.n, "Rows", "fig5a_reorder_time_vs_rows")
