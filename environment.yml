@@ -1,0 +1,29 @@
+# Versions used for the paper (aarch64 GH200 node, CUDA 12.0 toolkit).
+name: chunked-greedy
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pytorch=2.4.1=cuda120_py312*
+  - cuda-toolkit=12.0
+  - cxx-compiler=1.7
+  - cmake
+  - ninja
+  - boost-cpp=1.85
+  - libboost-devel=1.85
+  - numactl
+  - tbb=2023.0
+  - tbb-devel=2023.0
+  - simde
+  - pybind11
+  - nanobind
+  - numpy=2.0
+  - scipy=1.15
+  - pandas=2.2
+  - matplotlib=3.11
+  - numba=0.60
+  - pynndescent=0.5
+  - datasketch=2.0
+  - networkx
+  - pyyaml
+  - pip

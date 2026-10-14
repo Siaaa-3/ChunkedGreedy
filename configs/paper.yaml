@@ -1,0 +1,55 @@
+# Configuration of every result reported in the paper.
+# A reorder configuration is identified by (method, hash); the hash is derived from
+# the parameters below (see spmatkit.compute_reorder_hash).
+
+methods:
+  sporder-csg:        {label: ChunkedGreedy,       hash: a609629886c6, params: {k: 0, chunk_size: 0, oversampling: 0, auto_detect_symmetric: true}}
+  clusterwise-hier:   {label: ClusterHier,         hash: d4e368685f0d, params: {cluster_size: 8, topk: 7}}
+  acc:                {label: AccReorder,          hash: 5c9e3da11c1e, params: {}}
+  dtc-tca:            {label: TCA,                 hash: 48301ddacf3a, params: {c_thres: 132, cluster_thres: 0.2, lsh_thres: 0.2, per: 128, thres: 16}}
+  groot-py:           {label: Groot,               hash: 94e0ab87c116, params: {knn: 128}}
+  # Fig. 7 ablation and Table 1
+  sporder-cg:         {label: "CG w/o Stage 1",    hash: eefae4eb9269, params: {k: 0, chunk_size: 0, oversampling: 0, auto_detect_symmetric: true}}
+  global-greedy:      {label: "Global greedy",     hash: 00a81101f0d3, params: {}}
+  rabbit-local-greedy: {label: "Community-local greedy", hash: 8781fbd56fcb, params: {}}
+
+origin_hash: 685c3b160263
+main_methods: [acc, groot-py, dtc-tca, clusterwise-hier, sporder-csg]
+cg: sporder-csg
+
+reorder:
+  threads: 32
+  timeout_s: 3600
+
+spmm:
+  kernels: [voltrix, flashsparse, acc-spmm, dtc-spmm]
+  # Fig. 2 and Table 3 (Acc-SpMM load-balanced variant)
+  extra_kernels: [acc-spmm-balance]
+  widths: [32, 64, 128, 256]
+
+quality:
+  row_window: 16   # pillars: distinct columns per 16-row window
+  tc_width: 8
+
+# Matrix sets (files under datasets/)
+sets:
+  candidates: candidates_475.txt   # square, real, nnz >= 1e6; used for timeout rates
+  final: final_300.txt             # all five methods finish within one hour
+  graphs: graphs_60.txt            # final & SuiteSparse kind 'graph' & symmetric pattern; E2E GCN
+  table1: table1_8.txt
+# Derived sets (computed by analysis/paper_numbers.py):
+#   spmm_common (291): final matrices with SpMM data for all methods x kernels x widths
+#   joint_positive_w256 (95): spmm_common matrices with positive amortization for all
+#                             methods and kernels at width 256 (Fig. 4a)
+
+e2e:
+  epochs: 200
+  hidden: 128
+  classes: 16
+  kernels: [dtc-spmm, voltrix]
+
+sketch:
+  k: 16
+  gammas: [1, 2, 4, 8, 32]   # M = round_up(gamma * k, 32) counters per row (32 ... 512)
+  accuracy_every: 5          # every 5th matrix of the final set (62 matrices)
+  accuracy_rows: 4000

@@ -1,0 +1,26 @@
+[project]
+name = "spmatkit"
+version = "0.1.0"
+description = "Sparse matrix storage and loading for SpMM benchmarks"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.23",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+plot = [
+    "matplotlib>=3.5",
+]
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["spmatkit"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["spmatkit_plot*"]
+

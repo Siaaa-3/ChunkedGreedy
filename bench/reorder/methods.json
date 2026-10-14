@@ -1,0 +1,141 @@
+{
+  "acc": {
+    "params_schema": {},
+    "env_schema": {
+      "omp_threads": {
+        "type": "int"
+      }
+    }
+  },
+  "groot-py": {
+    "params_schema": {
+      "knn": {
+        "type": "int",
+        "default": 128
+      }
+    },
+    "env_schema": {
+      "omp_threads": {
+        "type": "int"
+      },
+      "n_jobs": {
+        "type": "int"
+      }
+    },
+    "fixed_defaults": {
+      "similarity_metric": "jaccard",
+      "use_mst": true,
+      "traversal": "dfs",
+      "start_node": "max_degree",
+      "seed": 2022
+    }
+  },
+  "dtc-tca": {
+    "params_schema": {
+      "thres": {
+        "type": "int",
+        "default": 16
+      },
+      "lsh_thres": {
+        "type": "float",
+        "default": 0.2
+      },
+      "cluster_thres": {
+        "type": "float",
+        "default": 0.2
+      },
+      "c_thres": {
+        "type": "int",
+        "optional": true,
+        "resolve": "gpu_sm_count"
+      },
+      "per": {
+        "type": "int",
+        "default": 128
+      }
+    },
+    "env_schema": {
+      "dtc_minhash_backend": {
+        "type": "str"
+      }
+    },
+    "fixed_defaults": {
+      "seed": 2022,
+      "use_gpu_minhash": "cpu"
+    }
+  },
+  "clusterwise-hier": {
+    "params_schema": {
+      "cluster_size": {
+        "type": "int",
+        "default": 8
+      },
+      "topk": {
+        "type": "int",
+        "default": 7
+      }
+    },
+    "env_schema": {
+      "omp_threads": {
+        "type": "int"
+      }
+    }
+  },
+  "global-greedy": {
+    "params_schema": {},
+    "env_schema": {},
+    "fixed_defaults": {
+      "start_node": 0
+    }
+  },
+  "rabbit-local-greedy": {
+    "params_schema": {},
+    "env_schema": {
+      "omp_threads": {
+        "type": "int"
+      }
+    }
+  },
+  "sporder-cg": {
+    "params_schema": {
+      "k": {
+        "type": "int",
+        "default": 0
+      },
+      "oversampling": {
+        "type": "float",
+        "default": 2
+      },
+      "chunk_size": {
+        "type": "int",
+        "default": 0
+      },
+      "auto_detect_symmetric": {
+        "type": "bool",
+        "default": true
+      }
+    },
+    "env_schema": {}
+  },
+  "sporder-csg": {
+    "params_schema": {
+      "k": {
+        "type": "int",
+        "default": 32
+      },
+      "oversampling": {
+        "type": "float",
+        "default": 1
+      },
+      "chunk_size": {
+        "type": "int",
+        "default": 2048
+      },
+      "auto_detect_symmetric": {
+        "type": "bool",
+        "default": true
+      }
+    },
+    "env_schema": {}
+  }
+}

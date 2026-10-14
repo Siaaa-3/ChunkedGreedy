@@ -1,0 +1,17 @@
+[build-system]
+requires = ["scikit-build-core", "nanobind"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "sporder"
+version = "0.1.0"
+description = "GPU sparse matrix reordering via hierarchical matching"
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+dev = ["black", "pandas"]
+
+[tool.scikit-build]
+cmake.args = ["-DSPORDER_BUILD_PYTHON=ON"]
+wheel.packages = ["python/sporder"]
+build-dir = "build/python"
